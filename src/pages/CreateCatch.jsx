@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import exifr from 'exifr'
 import { useAuth } from '../features/auth/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
@@ -99,6 +100,17 @@ export default function CreateCatch() {
 
     setSubmitting(true)
     try {
+      let caughtAt = new Date().toISOString()
+      try {
+        const exif = await exifr.parse(file, ['DateTimeOriginal', 'CreateDate', 'ModifyDate'])
+        const dt = exif?.DateTimeOriginal || exif?.CreateDate || exif?.ModifyDate
+        if (dt instanceof Date && !isNaN(dt.getTime())) {
+          caughtAt = dt.toISOString()
+        }
+      } catch {
+        // no exif or parse error, use now
+      }
+
       const compressed = await compressImage(file, { maxWidth: 1600, quality: 0.8 })
       if (!compressed) throw new Error('No se pudo procesar la imagen.')
 
@@ -116,7 +128,7 @@ export default function CreateCatch() {
         species_id: speciesId,
         photo_path: path,
         caption: caption.trim() || null,
-        caught_at: new Date().toISOString(),
+        caught_at: caughtAt,
         status: 'pending',
       })
 
