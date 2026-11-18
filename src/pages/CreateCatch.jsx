@@ -100,15 +100,33 @@ export default function CreateCatch() {
 
     setSubmitting(true)
     try {
-      let caughtAt = new Date().toISOString()
+      let caughtDate = null
       try {
         const exif = await exifr.parse(file, ['DateTimeOriginal', 'CreateDate', 'ModifyDate'])
         const dt = exif?.DateTimeOriginal || exif?.CreateDate || exif?.ModifyDate
         if (dt instanceof Date && !isNaN(dt.getTime())) {
-          caughtAt = dt.toISOString()
+          caughtDate = dt
         }
       } catch {
-        // no exif or parse error, use now
+        // no exif
+      }
+
+      if (!caughtDate) {
+        setErrorMsg('No se pudo verificar la fecha de la foto. Usa una foto tomada hoy desde la cámara (con datos de fecha).')
+        setSubmitting(false)
+        return
+      }
+
+      const today = new Date()
+      const sameDay =
+        caughtDate.getFullYear() === today.getFullYear() &&
+        caughtDate.getMonth() === today.getMonth() &&
+        caughtDate.getDate() === today.getDate()
+
+      if (!sameDay) {
+        setErrorMsg('La foto debe ser del día de hoy (según la fecha de la cámara).')
+        setSubmitting(false)
+        return
       }
 
       const compressed = await compressImage(file, { maxWidth: 1600, quality: 0.8 })
@@ -128,7 +146,7 @@ export default function CreateCatch() {
         species_id: speciesId,
         photo_path: path,
         caption: caption.trim() || null,
-        caught_at: caughtAt,
+        caught_at: caughtDate.toISOString(),
         status: 'pending',
       })
 
