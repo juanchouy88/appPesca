@@ -204,8 +204,10 @@ export default function CreateCatch() {
             accept="image/*"
             capture="environment"
             onChange={onPickFile}
-            className="block w-full text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:text-zinc-100"
+            className="block w-full text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:text-zinc-100 file:cursor-pointer"
+            aria-label="Tomar foto de la captura"
           />
+          <span className="text-xs text-zinc-500">Toca para tomar una foto de la captura (cámara).</span>
         </label>
 
         {previewUrl && (
